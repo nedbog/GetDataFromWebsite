@@ -11,55 +11,34 @@ namespace TerminalApp
 {
     class Program
     {
+        private static string _htmlContent = string.Empty;
+
         static void Main(string[] args)
         {
-            string html = string.Empty;
             string url = "https://www.anm.ro/nomenclator/medicamente";
 
-            //HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            //request.Method = "POST";
-
-            //using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-            //using (Stream stream = response.GetResponseStream())
-            //using (StreamReader reader = new StreamReader(stream))
-            //{
-            //    html = reader.ReadToEnd();
-            //}
-
-            //Console.WriteLine(html);
-
-            //GetRequest(url);
-            PostRequest(url);
+            GetRequestAsync(url, "W43451001");
 
             Console.ReadLine();
         }
 
-        async static void GetRequest(string url)
+        async static void GetRequestAsync(string url, string cim)
         {
+            string html = string.Empty;
+
+            string searchUrl = url + "?cim=" + cim;
             using (HttpClient client = new HttpClient())
-            using (HttpResponseMessage response = await client.GetAsync(url))
+            using (HttpResponseMessage response = await client.GetAsync(searchUrl))
             using (HttpContent content = response.Content)
             {
-                string myContent = await content.ReadAsStringAsync();
-                Console.WriteLine(myContent);
-            }
-        }
+                _htmlContent = await content.ReadAsStringAsync();
 
-        async static void PostRequest(string url)
-        {
-            IEnumerable<KeyValuePair<string, string>> queries = new List<KeyValuePair<string, string>>()
-            {
-                new KeyValuePair<string, string>("form[CIM]", "W43451001")
-            };
+                if (_htmlContent == null)
+                {
+                    _htmlContent = string.Empty;
+                }
 
-            HttpContent q = new FormUrlEncodedContent(queries);
-
-            using (HttpClient client = new HttpClient())
-            using (HttpResponseMessage response = await client.PostAsync(url, q))
-            using (HttpContent content = response.Content)
-            {
-                string myContent = await content.ReadAsStringAsync();
-                Console.WriteLine(myContent);
+                Console.WriteLine(_htmlContent);
             }
         }
     }
